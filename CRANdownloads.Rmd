@@ -1,0 +1,69 @@
+---
+title: "CRAN package downloads"
+author: "Vyacheslav Lyubchich"
+date: "2020-10-30"
+output: 
+  html_document:
+    toc: false
+    toc_float: false
+    toc_depth: 3
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE, warning = FALSE,
+                      fig.width = 9, fig.asp = 0.6)
+```
+
+
+Load R packages needed to get and visualize the data
+```{r}
+#devtools::install_github("metacran/cranlogs") #https://cranlogs.r-pkg.org/
+library(cranlogs)
+library(data.table)
+library(ggplot2)
+library(plotly)
+library(hrbrthemes)
+#extrafont::loadfonts()
+```
+
+
+Set a range of dates and names of the packages to track
+```{r}
+date1 <- "2015-01-01"
+date2 <- Sys.Date() #today
+P <- c("funtimes", "lawstat", "snowboot")
+D <- cran_downloads(from = date1, to = date2, packages = P)
+D <- setDT(D)
+setnames(D, "package", "Package")
+```
+
+Aggregate data by month
+```{r}
+d <- D[, .(Count = sum(count)), by = .(Year = year(date), 
+                                       Month = months(date),
+                                       Package)]
+#Create a date variable for plotting
+d <- d[, ':='(
+    Date = as.Date(paste0(Year, "-", Month, "-01"), format = "%Y-%B-%d")
+)]
+```
+
+Plot data using ggplot2
+```{r}
+p <- ggplot(d, aes(x = Date, y = Count, group = Package, colour = Package)) +
+    geom_line(size = 1.2) +
+    xlab("") + ylab("Total monthly downloads") + 
+    ggtitle(paste0("Downloads of the R packages from CRAN (from ", date1, " to ", date2, ")")) +
+    theme_ipsum_pub() + 
+    theme(plot.title = element_text(size = 12))
+```
+
+Make the plot interactive using plotly
+```{r}
+ggplotly(p)
+```
+
+
+
