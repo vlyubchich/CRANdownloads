@@ -55,6 +55,14 @@ d <- d[, ':='(
 )]
 ```
 
+Sums
+```{r}
+d %>% 
+  group_by(Package) %>% 
+  summarise(Total = sum(Count))
+```
+
+
 Plot data using `ggplot2`
 ```{r}
 p <- ggplot(d, aes(x = Date, y = Count, group = Package, colour = Package)) +
