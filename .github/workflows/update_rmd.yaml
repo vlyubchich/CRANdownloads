@@ -8,31 +8,42 @@ name: Render CRAN package downloads
 env:
   GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
+permissions:
+  contents: write
+
 jobs:
-    render-markdown:
-        runs-on: ubuntu-latest
+  render-markdown:
+    runs-on: ubuntu-latest
 
-        steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-        - name: Set up R
-          uses: r-lib/actions/setup-r@v2
-          with:
-            use-public-rspm: true
+    - name: Set up R
+      uses: r-lib/actions/setup-r@v2
+      with:
+        use-public-rspm: true
 
-        - name: Set up R packages
-          uses: r-lib/actions/setup-r-dependencies@v2
-          with:
-            packages:
-                any::knitr
-                any::rmarkdown
-                any::cranlogs
-                any::data.table
-                any::ggplot2
-                any::plotly
-                any::hrbrthemes
-                any::extrafont
+    - name: Set up R packages
+      uses: r-lib/actions/setup-r-dependencies@v2
+      with:
+        packages:
+            any::knitr
+            any::rmarkdown
+            any::cranlogs
+            any::data.table
+            any::ggplot2
+            any::plotly
+            any::hrbrthemes
+            any::extrafont
 
-        - name: Render CRAN downloads RMD
-          run: Rscript -e "rmarkdown::render('CRANdownloads.Rmd')"
+    - name: Render CRAN downloads RMD
+      run: Rscript -e "rmarkdown::render('CRANdownloads.Rmd')"
+
+    - name: Commit to repository
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add --all
+        git commit --allow-empty -m "[auto] Update CRAN downloads $(TZ=America/New_York date +'%Y-%m-%d %H:%M')"
+        git push
