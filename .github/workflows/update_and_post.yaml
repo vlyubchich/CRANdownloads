@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 jobs:
-  render-markdown:
+  render-and-post:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,6 +40,23 @@ jobs:
 
     - name: Render CRAN downloads RMD
       run: Rscript -e "rmarkdown::render('CRANdownloads.Rmd')"
+
+    - name: Copy to GH Pages directory
+      run: |
+        mkdir summary
+        cp CRANdownloads.html summary/
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+        
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: "summary"
+        
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
 
     - name: Commit to repository
       run: |
